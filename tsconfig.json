@@ -1,14 +1,17 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "ESNext",
-    "moduleResolution": "Node",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "strict": true,
     "declaration": true,
+    "declarationMap": true,
     "sourceMap": true,
-    "outDir": "dist",
     "rootDir": "src",
-    "skipLibCheck": true
+    "outDir": "dist",
+    "skipLibCheck": true,
+    "noImplicitOverride": true,
+    "noUncheckedIndexedAccess": true
   },
   "include": ["src"]
 }

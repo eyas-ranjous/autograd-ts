@@ -11,14 +11,12 @@
       "types": "./dist/index.d.ts"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "build": "tsc",
-    "dev": "ts-node examples/basic.ts",
+    "dev": "tsx examples/basic.ts",
     "test": "vitest",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build && npm run test"
   },
   "keywords": [
     "autograd",
@@ -31,7 +29,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "ts-node": "^10.9.1",
+    "tsx": "^4.0.0",
     "typescript": "^5.3.0",
     "vitest": "^2.0.0"
   }
