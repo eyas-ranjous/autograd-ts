@@ -2,20 +2,22 @@
   "name": "autograd-ts",
   "version": "0.1.0",
   "description": "A tiny reverse-mode automatic differentiation engine in TypeScript",
-  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/src/index.js",
+      "types": "./dist/src/index.d.ts"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
-    "dev": "tsx examples/basic.ts",
-    "test": "vitest",
+    "dev": "vitest run tests/value.test.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "prepublishOnly": "npm run build && npm run test"
   },
   "keywords": [
@@ -29,7 +31,6 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "tsx": "^4.0.0",
     "typescript": "^5.3.0",
     "vitest": "^2.0.0"
   }
