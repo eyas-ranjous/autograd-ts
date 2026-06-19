@@ -1,5 +1,4 @@
 # autograd-ts
-
 A tiny Typescript library that implements **reverse-mode automatic differentiation** (autograd) and neural network training.
 
 The goal of the project is exploring the fundamental mechanism that allows neural networks to learn.
@@ -9,6 +8,25 @@ At its core, a neural network is a system of interconnected computations.
 Producing an output is straightforward. However, learning requires determining how each value influenced that output and how those values should be adjusted when the prediction is wrong.
 
 This library explores the mechanism that makes that possible.
+
+## Usage
+
+Install:
+
+```bash
+npm install autograd-ts
+```
+
+## Import
+```ts
+import {
+  Value,
+  val,
+  MLP,
+  mse,
+  sgd,
+} from 'autograd-ts';
+```
 
 ---
 
@@ -225,28 +243,9 @@ This feedback loop is the mechanism that allows neural networks to learn.
 ---
 
 # Project Scope
-
-## Usage
-
-Install:
-
-```bash
-npm install autograd-ts
-```
-
-## Import
-```ts
-import {
-  Value,
-  val,
-  MLP,
-  mse,
-  sgd,
-} from 'autograd-ts';
-```
+Version 0.1.0 focuses on a minimal learning system.
 
 ## Core Autograd Engine
-Version 0.1.0 focuses on a minimal learning system.
 
 * Value
 * add
