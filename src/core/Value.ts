@@ -39,7 +39,7 @@ export class Value {
 
     const out = new Value(this.data + o.data, {
       prev: [this, o],
-      op: "+",
+      op: '+',
       backward: () => {
         this.grad += out.grad;
         o.grad += out.grad;
@@ -59,7 +59,7 @@ export class Value {
 
     const out = new Value(this.data * o.data, {
       prev: [this, o],
-      op: "*",
+      op: '*',
       backward: () => {
         this.grad += o.data * out.grad;
         o.grad += this.data * out.grad;
@@ -95,7 +95,7 @@ export class Value {
 
     const out = new Value(t, {
       prev: [this],
-      op: "tanh",
+      op: 'tanh',
       backward: () => {
         this.grad += (1 - t * t) * out.grad;
       },
@@ -111,7 +111,7 @@ export class Value {
   public relu(): Value {
     const out = new Value(this.data > 0 ? this.data : 0, {
       prev: [this],
-      op: "relu",
+      op: 'relu',
       backward: () => {
         this.grad += (this.data > 0 ? 1 : 0) * out.grad;
       },
@@ -178,7 +178,7 @@ export class Value {
     this.grad = 1;
 
     for (let i = topo.length - 1; i >= 0; i--) {
-      topo[i]._backward();
+      topo[i]!._backward();
     }
   }
 
