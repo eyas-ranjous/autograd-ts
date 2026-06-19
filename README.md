@@ -226,9 +226,27 @@ This feedback loop is the mechanism that allows neural networks to learn.
 
 # Project Scope
 
-Version 0.1.0 focuses on a minimal learning system.
+## Usage
+
+Install:
+
+```bash
+npm install autograd-ts
+```
+
+## Import
+```ts
+import {
+  Value,
+  val,
+  MLP,
+  mse,
+  sgd,
+} from 'autograd-ts';
+```
 
 ## Core Autograd Engine
+Version 0.1.0 focuses on a minimal learning system.
 
 * Value
 * add
