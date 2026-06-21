@@ -1,5 +1,5 @@
 # autograd-ts
-A tiny TypeScript library implementing **reverse-mode automatic differentiation** (autograd) and neural network training from scratch.
+A tiny TypeScript library implementing reverse-mode automatic differentiation (autograd) and neural network training from scratch.
 
 The goal of the project is exploring the fundamental mechanism that allows neural networks to learn.
 
@@ -117,7 +117,9 @@ Each node represents a computed value.
 | a    | x * y   | 6     |
 | z    | a + x   | 8     |
 
-Each edge represents a dependency. This structure is what makes it possible to reason about how a change in one node affects any other.
+Each edge represents a dependency. Notice that `x` appears twice in the graph, it feeds into both the `*` and the `+` operations. This means changes to `x` affect the output through two separate paths, and both contributions must be accounted for when computing its gradient.
+
+The graph gives us a structured record of how the computation unfolded. Without that record, there is no way to reason systematically about how each value influenced the output. This is what makes backward traversal possible.
 
 ---
 
@@ -135,7 +137,9 @@ const z = x.mul(y).add(x);
 //              x.grad += out.grad
 ```
 
-Calling `z.backward()` topologically sorts the computation graph, sets `z.grad = 1`, then traverses in reverse — each node firing its `_backward` to accumulate gradients up the chain.
+Notice that gradients use `+=` rather than `=`. Because `x` feeds into two operations, its gradient arrives from two separate paths and must be summed. Overwriting it would discard one of those contributions.
+
+Calling `z.backward()` topologically sorts the computation graph and sets `z.grad = 1`. The topological order guarantees that by the time a node computes its contribution to its inputs, all nodes that depend on it have already done so. The traversal then runs in reverse, each node firing its `_backward` to accumulate gradients up the chain.
 
 For `z = x * y + x` with `x = 2, y = 3`:
 
@@ -146,16 +150,16 @@ y.grad = 2   (∂z/∂y)
 
 These gradients measure how sensitive the output is to each input. `x.grad = 4` means a small increase in `x` increases `z` by approximately 4.
 
-This process is known as reverse-mode automatic differentiation, the same technique used by modern machine learning frameworks.
+This process is known as reverse-mode automatic differentiation, the same technique used by modern machine learning frameworks like PyTorch and TensorFlow.
 
 ---
 
 # Layer 3: Neural Networks
 
-A single neuron computes:
+A single neuron computes a weighted sum of its inputs, adds a bias, and passes the result through an activation function:
 
 ```text
-w1*x1 + w2*x2 + b
+output = activation(w1*x1 + w2*x2 + b)
 ```
 
 which is simply a larger computation graph:
@@ -174,11 +178,19 @@ b ---|
 
 The weights (`w1`, `w2`) and bias (`b`) are `Value` nodes. The autograd engine computes their gradients automatically — nothing special is added to support neural networks. The same graph and differentiation system powers everything.
 
+The activation function is what makes neural networks capable of learning complex patterns. Without it, stacking multiple layers of neurons would be equivalent to a single linear transformation — no matter how deep the network, it could only represent straight-line relationships. Activations like `tanh` and `relu` introduce the non-linearity needed to model more complex functions.
+
+Stacking neurons into layers, and layers into a network, scales this same idea. Each layer transforms its inputs, building increasingly abstract representations as the signal moves forward through the network.
+
 ---
 
 # Layer 4: Learning
 
-Once gradients are available, training becomes possible. Each step follows the same pattern:
+The loss is a single scalar that measures how wrong the model's prediction is. The goal of training is to minimize it. What makes this possible is that the loss is the output of the same computation graph — so calling `backward()` on it distributes gradients all the way back to every weight in the network.
+
+The gradient of the loss with respect to a weight tells you which direction increases the loss. Moving in the opposite direction reduces it. That is gradient descent.
+
+Each training step follows the same pattern:
 
 ```ts
 for (let epoch = 0; epoch < epochs; epoch++) {
@@ -192,7 +204,7 @@ for (let epoch = 0; epoch < epochs; epoch++) {
 }
 ```
 
-> **Important:** `zeroGrad()` must be called before each `backward()`. Gradients accumulate with `+=` — skipping this causes gradients from previous steps to corrupt the update.
+> **Important:** `zeroGrad()` must be called before each `backward()`. Gradients accumulate with `+=` — skipping this causes gradients from previous steps to corrupt the current update.
 
 Over many epochs, the network adjusts its weights to reduce prediction error. This feedback loop is the mechanism that allows neural networks to learn.
 
