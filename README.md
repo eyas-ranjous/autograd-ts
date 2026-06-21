@@ -1,5 +1,5 @@
 # autograd-ts
-A tiny TypeScript library implementing reverse-mode automatic differentiation (autograd) and neural network training from scratch.
+A tiny TypeScript library implementing **reverse-mode automatic differentiation** (autograd) and neural network training from scratch.
 
 The goal of the project is exploring the fundamental mechanism that allows neural networks to learn.
 
@@ -117,9 +117,11 @@ Each node represents a computed value.
 | a    | x * y   | 6     |
 | z    | a + x   | 8     |
 
-Each edge represents a dependency. Notice that `x` appears twice in the graph, it feeds into both the `*` and the `+` operations. This means changes to `x` affect the output through two separate paths, and both contributions must be accounted for when computing its gradient.
+Each edge represents a dependency. Notice that `x` appears twice in the graph, feeding into both the `*` and the `+` operations. This means changes to `x` affect the output through two separate paths, and both contributions must be accounted for when computing its gradient.
 
 The graph gives us a structured record of how the computation unfolded. Without that record, there is no way to reason systematically about how each value influenced the output. This is what makes backward traversal possible.
+
+Importantly, this graph is built automatically. When you write arithmetic using `Value` objects, each operation records its inputs as it runs. You never construct the graph manually.
 
 ---
 
@@ -139,7 +141,7 @@ const z = x.mul(y).add(x);
 
 Notice that gradients use `+=` rather than `=`. Because `x` feeds into two operations, its gradient arrives from two separate paths and must be summed. Overwriting it would discard one of those contributions.
 
-Calling `z.backward()` topologically sorts the computation graph and sets `z.grad = 1`. The topological order guarantees that by the time a node computes its contribution to its inputs, all nodes that depend on it have already done so. The traversal then runs in reverse, each node firing its `_backward` to accumulate gradients up the chain.
+Calling `z.backward()` topologically sorts the computation graph and sets `z.grad = 1`, which seeds the process: the derivative of the output with respect to itself is always 1. The topological order guarantees that by the time a node propagates gradients to its inputs, all nodes downstream of it have already done so. The traversal then runs in reverse, each node firing its `_backward` to accumulate gradients up the chain.
 
 For `z = x * y + x` with `x = 2, y = 3`:
 
@@ -150,7 +152,7 @@ y.grad = 2   (∂z/∂y)
 
 These gradients measure how sensitive the output is to each input. `x.grad = 4` means a small increase in `x` increases `z` by approximately 4.
 
-This process is known as reverse-mode automatic differentiation, the same technique used by modern machine learning frameworks like PyTorch and TensorFlow.
+This process is known as **reverse-mode automatic differentiation**, the same technique used by modern machine learning frameworks like PyTorch and TensorFlow.
 
 ---
 
@@ -176,9 +178,9 @@ w2 --|
 b ---|
 ```
 
-The weights (`w1`, `w2`) and bias (`b`) are `Value` nodes. The autograd engine computes their gradients automatically — nothing special is added to support neural networks. The same graph and differentiation system powers everything.
+The weights (`w1`, `w2`) control how much each input contributes to the output. The bias (`b`) shifts the result, allowing the neuron to activate even when all inputs are zero. All three are `Value` nodes, so the autograd engine computes their gradients automatically. Nothing special is added to support neural networks. The same graph and differentiation system powers everything.
 
-The activation function is what makes neural networks capable of learning complex patterns. Without it, stacking multiple layers of neurons would be equivalent to a single linear transformation — no matter how deep the network, it could only represent straight-line relationships. Activations like `tanh` and `relu` introduce the non-linearity needed to model more complex functions.
+The activation function is what makes neural networks capable of learning complex patterns. Without it, stacking multiple layers of neurons would be equivalent to a single linear transformation, regardless of network depth, and the model could only represent straight-line relationships. Activations like `tanh` and `relu` introduce the non-linearity needed to model more complex functions.
 
 Stacking neurons into layers, and layers into a network, scales this same idea. Each layer transforms its inputs, building increasingly abstract representations as the signal moves forward through the network.
 
@@ -186,9 +188,9 @@ Stacking neurons into layers, and layers into a network, scales this same idea. 
 
 # Layer 4: Learning
 
-The loss is a single scalar that measures how wrong the model's prediction is. The goal of training is to minimize it. What makes this possible is that the loss is the output of the same computation graph — so calling `backward()` on it distributes gradients all the way back to every weight in the network.
+The loss is a single scalar that measures how wrong the model's prediction is. The goal of training is to minimize it. What makes this possible is that the loss is the output of the same computation graph, so calling `backward()` on it distributes gradients all the way back to every weight in the network.
 
-The gradient of the loss with respect to a weight tells you which direction increases the loss. Moving in the opposite direction reduces it. That is gradient descent.
+The gradient of the loss with respect to a weight tells you which direction increases the loss. Moving in the opposite direction reduces it. That is gradient descent. The learning rate controls how large each step is: too large and the updates overshoot, too small and training is slow.
 
 Each training step follows the same pattern:
 
@@ -204,7 +206,7 @@ for (let epoch = 0; epoch < epochs; epoch++) {
 }
 ```
 
-> **Important:** `zeroGrad()` must be called before each `backward()`. Gradients accumulate with `+=` — skipping this causes gradients from previous steps to corrupt the current update.
+> **Important:** `zeroGrad()` must be called before each `backward()`. Gradients accumulate with `+=`, so skipping this causes gradients from previous steps to corrupt the current update.
 
 Over many epochs, the network adjusts its weights to reduce prediction error. This feedback loop is the mechanism that allows neural networks to learn.
 
@@ -216,38 +218,38 @@ Over many epochs, the network adjusts its weights to reduce prediction error. Th
 
 The core scalar node. Every computation builds on `Value` objects.
 
-| Operation      | Method        | Notes                          |
-| -------------- | ------------- | ------------------------------ |
-| Addition       | `a.add(b)`    | `b` can be `Value` or `number` |
-| Subtraction    | `a.sub(b)`    | `b` can be `Value` or `number` |
-| Multiplication | `a.mul(b)`    | `b` can be `Value` or `number` |
-| Division       | `a.div(b)`    | `b` can be `Value` or `number` |
-| Power          | `a.pow(n)`    | `n` is a plain `number`        |
-| Tanh           | `a.tanh()`    | Activation function            |
-| ReLU           | `a.relu()`    | Activation function            |
-| Backprop       | `a.backward()` | Computes all gradients        |
+| Operation      | Method         | Notes                          |
+| -------------- | -------------- | ------------------------------ |
+| Addition       | `a.add(b)`     | `b` can be `Value` or `number` |
+| Subtraction    | `a.sub(b)`     | `b` can be `Value` or `number` |
+| Multiplication | `a.mul(b)`     | `b` can be `Value` or `number` |
+| Division       | `a.div(b)`     | `b` can be `Value` or `number` |
+| Power          | `a.pow(n)`     | `n` is a plain `number`        |
+| Tanh           | `a.tanh()`     | Activation function            |
+| ReLU           | `a.relu()`     | Activation function            |
+| Backprop       | `a.backward()` | Computes all gradients         |
 
 `val(n)` is a shorthand for `new Value(n)`.
 
 ## `MLP`
 
-A Multi-Layer Perceptron. a fully connected neural network composed of stacked layers of neurons.
+A Multi-Layer Perceptron, a fully connected neural network composed of stacked layers of neurons.
 
 ```ts
 new MLP(inputSize, layerSizes, options?)
 ```
 
-| Parameter                  | Description                                      |
-| -------------------------- | ------------------------------------------------ |
-| `inputSize`                | Number of input features                         |
-| `layerSizes`               | Output size of each layer — e.g. `[4, 1]` creates a hidden layer of 4 neurons and an output layer of 1 |
-| `options.hiddenActivation` | `'tanh'` (default), `'relu'`, or `'none'`        |
-| `options.outputActivation` | `'none'` (default), `'tanh'`, or `'relu'`        |
+| Parameter                  | Description                                                                                               |
+| -------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `inputSize`                | Number of input features                                                                                  |
+| `layerSizes`               | Output size of each layer, e.g. `[4, 1]` creates a hidden layer of 4 neurons and an output layer of 1   |
+| `options.hiddenActivation` | `'tanh'` (default), `'relu'`, or `'none'`                                                                 |
+| `options.outputActivation` | `'none'` (default), `'tanh'`, or `'relu'`                                                                 |
 
 ```ts
-model.forward(inputs)              // returns Value[] — runs the forward pass
-model.parameters()                 // returns all trainable Value nodes
-model.zeroGrad()                   // resets all parameter gradients to zero
+model.forward(inputs)     // returns Value[], runs the forward pass
+model.parameters()        // returns all trainable Value nodes
+model.zeroGrad()          // resets all parameter gradients to zero
 ```
 
 ## `mse(predictions, targets)`
@@ -264,8 +266,8 @@ Updates each parameter in-place: `param.data -= learningRate * param.grad`.
 
 ```
 examples/
-├── basic.ts   — computation graph, forward pass, and gradients
-└── xor.ts     — training a network to learn XOR
+├── basic.ts    computation graph, forward pass, and gradients
+└── xor.ts      training a network to learn XOR
 ```
 
 **Basic**
@@ -300,7 +302,7 @@ epoch=900 loss=0.004291
 
 A minimal foundation for training neural networks from scratch.
 
-**Core autograd engine:** `Value` — add, sub, mul, div, pow, tanh, relu, backward
+**Core autograd engine:** `Value` with add, sub, mul, div, pow, tanh, relu, and backward
 
 **Neural network components:** Neuron, Layer, MLP
 
