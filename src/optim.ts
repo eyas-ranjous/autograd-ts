@@ -1,4 +1,4 @@
-import { Value } from '../core/Value';
+import { Value } from './Value';
 
 /**
  * Updates parameters using stochastic gradient descent.

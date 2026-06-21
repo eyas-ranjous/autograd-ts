@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MLP, mse, sgd } from '../src/nn';
+import { MLP, mse, sgd } from '../src';
 
 describe('nn', () => {
   it('runs a forward pass through an MLP', () => {

@@ -1,4 +1,4 @@
-import { Value } from '../core/Value';
+import { Value } from './Value';
 import { Activation, Neuron } from './Neuron';
 
 /**

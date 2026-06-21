@@ -1,4 +1,4 @@
-import { MLP, mse, sgd } from '../src/nn';
+import { MLP, mse, sgd } from '../src';
 
 const dataset = [
   { inputs: [0, 0], target: 0 },

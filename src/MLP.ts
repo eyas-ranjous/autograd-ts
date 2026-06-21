@@ -1,4 +1,4 @@
-import { Value, val } from '../core/Value';
+import { Value, val } from './Value';
 import { Activation } from './Neuron';
 import { Layer } from './Layer';
 

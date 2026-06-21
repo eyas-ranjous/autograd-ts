@@ -1,4 +1,4 @@
-import { Value, val } from '../core/Value';
+import { Value, val } from './Value';
 
 export type Activation = 'tanh' | 'relu' | 'none';
 

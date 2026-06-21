@@ -1,4 +1,4 @@
-import { val } from "../src/index";
+import { val } from "../src";
 
 const x = val(2);
 const y = val(3);

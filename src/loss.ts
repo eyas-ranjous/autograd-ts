@@ -1,4 +1,4 @@
-import { Value, val } from '../core/Value';
+import { Value, val } from './Value';
 
 /**
  * Computes mean squared error between predictions and targets.

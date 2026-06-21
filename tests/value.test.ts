@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { val } from '../src/index';
+import { val } from '../src';
 
 describe('Value', () => {
   it('computes gradients for z = x*y + x', () => {
