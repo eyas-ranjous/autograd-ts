@@ -1,7 +1,13 @@
 # autograd-ts
-A tiny TypeScript library implementing **reverse-mode automatic differentiation** and neural network training from scratch.
+A tiny TypeScript library implementing **reverse-mode automatic differentiation** (autograd) and neural network training from scratch.
 
-The goal is to explore the fundamental mechanism that allows neural networks to learn: how a model traces a prediction back through its computations, measures how each weight contributed to the error, and adjusts accordingly.
+The goal of the project is exploring the fundamental mechanism that allows neural networks to learn.
+
+At its core, a neural network is a system of interconnected computations.
+
+Producing an output is straightforward. However, learning requires determining how each value influenced that output and how those values should be adjusted when the prediction is wrong.
+
+This library explores the mechanism that makes that possible.
 
 ## Installation
 
@@ -16,9 +22,52 @@ import { Value, val, MLP, mse, sgd } from 'autograd-ts';
 
 ---
 
-# How It Works
+# Understanding Learning
 
-Neural networks learn through a sequence of ideas that build on one another:
+A neural network can make a prediction by evaluating a series of mathematical operations.
+
+For example, consider the simplified model:
+
+```text
+z = x * y + x
+```
+
+Given the inputs:
+
+```text
+x = 2
+y = 3
+```
+
+the model produces:
+
+```text
+z = 8
+```
+
+Suppose the expected value was:
+
+```text
+target = 10
+```
+
+Now we need to answer:
+
+```text
+1. Which values contributed to the error?
+2. How much did they contribute?
+3. How should they change?
+```
+
+For a simple expression this may seem manageable. For a neural network containing thousands or millions of parameters, it becomes a much more difficult problem.
+
+This leads to the central question behind the project:
+
+> When a neural network makes a prediction, how does it know which weights to adjust?
+
+A model must be able to trace a prediction back through the computations that produced it, measure how each value contributed to the final result, and determine how those values should change when the prediction is wrong.
+
+Modern machine learning systems solve this problem through a sequence of concepts that build on one another:
 
 ```text
 Computation Graph
@@ -74,7 +123,7 @@ Each edge represents a dependency. This structure is what makes it possible to r
 
 # Layer 2: Automatic Differentiation
 
-Every operation in this library doesn't just compute a result — it also records how to differentiate through itself. Each `Value` node stores a `_backward` closure that knows how to propagate gradients to its inputs using the chain rule.
+Every operation in this library doesn't just compute a result, it also records how to differentiate through itself. Each `Value` node stores a `_backward` closure that knows how to propagate gradients to its inputs using the chain rule.
 
 ```ts
 // When you write:
@@ -170,6 +219,8 @@ The core scalar node. Every computation builds on `Value` objects.
 
 ## `MLP`
 
+A Multi-Layer Perceptron. a fully connected neural network composed of stacked layers of neurons.
+
 ```ts
 new MLP(inputSize, layerSizes, options?)
 ```
@@ -235,7 +286,7 @@ epoch=900 loss=0.004291
 
 # Project Scope
 
-Version 0.1.3 — a minimal learning system.
+A minimal foundation for training neural networks from scratch.
 
 **Core autograd engine:** `Value` — add, sub, mul, div, pow, tanh, relu, backward
 
