@@ -1,4 +1,7 @@
 # autograd-ts
+[![npm](https://img.shields.io/npm/v/autograd-ts.svg)](https://www.npmjs.com/package/autograd-ts)
+[![npm](https://img.shields.io/npm/dm/autograd-ts.svg)](https://www.npmjs.com/package/autograd-ts)
+
 A tiny TypeScript library implementing **reverse-mode automatic differentiation** (autograd) and neural network training from scratch.
 
 The goal of the project is exploring the fundamental mechanism that allows neural networks to learn.
