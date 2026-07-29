@@ -23,6 +23,91 @@ npm install autograd-ts
 import { Value, val, MLP, mse, sgd } from 'autograd-ts';
 ```
 
+
+# API
+
+## `Value`
+
+The core scalar node. Every computation builds on `Value` objects.
+
+| Operation      | Method         | Notes                          |
+| -------------- | -------------- | ------------------------------ |
+| Addition       | `a.add(b)`     | `b` can be `Value` or `number` |
+| Subtraction    | `a.sub(b)`     | `b` can be `Value` or `number` |
+| Multiplication | `a.mul(b)`     | `b` can be `Value` or `number` |
+| Division       | `a.div(b)`     | `b` can be `Value` or `number` |
+| Power          | `a.pow(n)`     | `n` is a plain `number`        |
+| Tanh           | `a.tanh()`     | Activation function            |
+| ReLU           | `a.relu()`     | Activation function            |
+| Backprop       | `a.backward()` | Computes all gradients         |
+
+`val(n)` is a shorthand for `new Value(n)`.
+
+## `MLP`
+
+A Multi-Layer Perceptron, a fully connected neural network composed of stacked layers of neurons.
+
+```ts
+new MLP(inputSize, layerSizes, options?)
+```
+
+| Parameter                  | Description                                                                                               |
+| -------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `inputSize`                | Number of input features                                                                                  |
+| `layerSizes`               | Output size of each layer, e.g. `[4, 1]` creates a hidden layer of 4 neurons and an output layer of 1   |
+| `options.hiddenActivation` | `'tanh'` (default), `'relu'`, or `'none'`                                                                 |
+| `options.outputActivation` | `'none'` (default), `'tanh'`, or `'relu'`                                                                 |
+
+```ts
+model.forward(inputs)     // returns Value[], runs the forward pass
+model.parameters()        // returns all trainable Value nodes
+model.zeroGrad()          // resets all parameter gradients to zero
+```
+
+## `mse(predictions, targets)`
+
+Computes mean squared error. Returns a `Value` that is part of the computation graph and supports `backward()`.
+
+## `sgd(parameters, learningRate)`
+
+Updates each parameter in-place: `param.data -= learningRate * param.grad`.
+
+---
+
+# Examples
+
+```
+examples/
+├── basic.ts    computation graph, forward pass, and gradients
+└── xor.ts      training a network to learn XOR
+```
+
+**Basic**
+```
+z: 8
+dz/dx: 4
+dz/dy: 2
+```
+
+**XOR training**
+```
+epoch=0   loss=1.824531
+epoch=100 loss=0.712943
+epoch=200 loss=0.403817
+epoch=300 loss=0.182691
+epoch=400 loss=0.087432
+epoch=500 loss=0.041827
+epoch=600 loss=0.021554
+epoch=700 loss=0.012115
+epoch=800 loss=0.007083
+epoch=900 loss=0.004291
+
+[0, 0] => 0.0213
+[0, 1] => 0.9834
+[1, 0] => 0.9772
+[1, 1] => 0.0189
+```
+
 ---
 
 # Understanding Learning
@@ -212,92 +297,6 @@ for (let epoch = 0; epoch < epochs; epoch++) {
 > **Important:** `zeroGrad()` must be called before each `backward()`. Gradients accumulate with `+=`, so skipping this causes gradients from previous steps to corrupt the current update.
 
 Over many epochs, the network adjusts its weights to reduce prediction error. This feedback loop is the mechanism that allows neural networks to learn.
-
----
-
-# API
-
-## `Value`
-
-The core scalar node. Every computation builds on `Value` objects.
-
-| Operation      | Method         | Notes                          |
-| -------------- | -------------- | ------------------------------ |
-| Addition       | `a.add(b)`     | `b` can be `Value` or `number` |
-| Subtraction    | `a.sub(b)`     | `b` can be `Value` or `number` |
-| Multiplication | `a.mul(b)`     | `b` can be `Value` or `number` |
-| Division       | `a.div(b)`     | `b` can be `Value` or `number` |
-| Power          | `a.pow(n)`     | `n` is a plain `number`        |
-| Tanh           | `a.tanh()`     | Activation function            |
-| ReLU           | `a.relu()`     | Activation function            |
-| Backprop       | `a.backward()` | Computes all gradients         |
-
-`val(n)` is a shorthand for `new Value(n)`.
-
-## `MLP`
-
-A Multi-Layer Perceptron, a fully connected neural network composed of stacked layers of neurons.
-
-```ts
-new MLP(inputSize, layerSizes, options?)
-```
-
-| Parameter                  | Description                                                                                               |
-| -------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `inputSize`                | Number of input features                                                                                  |
-| `layerSizes`               | Output size of each layer, e.g. `[4, 1]` creates a hidden layer of 4 neurons and an output layer of 1   |
-| `options.hiddenActivation` | `'tanh'` (default), `'relu'`, or `'none'`                                                                 |
-| `options.outputActivation` | `'none'` (default), `'tanh'`, or `'relu'`                                                                 |
-
-```ts
-model.forward(inputs)     // returns Value[], runs the forward pass
-model.parameters()        // returns all trainable Value nodes
-model.zeroGrad()          // resets all parameter gradients to zero
-```
-
-## `mse(predictions, targets)`
-
-Computes mean squared error. Returns a `Value` that is part of the computation graph and supports `backward()`.
-
-## `sgd(parameters, learningRate)`
-
-Updates each parameter in-place: `param.data -= learningRate * param.grad`.
-
----
-
-# Examples
-
-```
-examples/
-├── basic.ts    computation graph, forward pass, and gradients
-└── xor.ts      training a network to learn XOR
-```
-
-**Basic**
-```
-z: 8
-dz/dx: 4
-dz/dy: 2
-```
-
-**XOR training**
-```
-epoch=0   loss=1.824531
-epoch=100 loss=0.712943
-epoch=200 loss=0.403817
-epoch=300 loss=0.182691
-epoch=400 loss=0.087432
-epoch=500 loss=0.041827
-epoch=600 loss=0.021554
-epoch=700 loss=0.012115
-epoch=800 loss=0.007083
-epoch=900 loss=0.004291
-
-[0, 0] => 0.0213
-[0, 1] => 0.9834
-[1, 0] => 0.9772
-[1, 1] => 0.0189
-```
 
 ---
 
