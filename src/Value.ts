@@ -79,6 +79,8 @@ export class Value {
       prev: [this],
       op: `pow(${n})`,
       backward: () => {
+        if (n === 0) return;
+
         this.grad += n * this.data ** (n - 1) * out.grad;
       },
     });

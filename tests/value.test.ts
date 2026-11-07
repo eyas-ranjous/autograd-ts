@@ -2,6 +2,26 @@ import { describe, expect, it } from 'vitest';
 import { val } from '../src';
 
 describe('Value', () => {
+  it.each([0, 2, -2])('computes zero gradient for %s raised to zero', (base) => {
+    const x = val(base);
+    const y = x.pow(0);
+
+    y.backward();
+
+    expect(y.data).toBe(1);
+    expect(x.grad).toBe(0);
+  });
+
+  it('preserves gradients from other paths when raising zero to zero', () => {
+    const x = val(0);
+    const y = x.pow(0).add(x.mul(3));
+
+    y.backward();
+
+    expect(y.data).toBe(1);
+    expect(x.grad).toBe(3);
+  });
+
   it('computes gradients for z = x*y + x', () => {
     const x = val(2);
     const y = val(3);
