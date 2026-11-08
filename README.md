@@ -311,3 +311,21 @@ A minimal foundation for training neural networks from scratch.
 **Neural network components:** Neuron, Layer, MLP
 
 **Training utilities:** MSE loss, SGD optimizer
+
+## Reproducible initialization
+
+Pass a seeded random source through `random` to reproduce initial weights. It must return numbers in `[0, 1)`. The same source is used across every layer; create a fresh source with the same seed when reproducing a model. The default remains `Math.random`.
+
+```ts
+function seededRandom(seed: number): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state = (Math.imul(1664525, state) + 1013904223) >>> 0;
+    return state / 4294967296;
+  };
+}
+
+const model = new MLP(2, [4, 1], { random: seededRandom(42) });
+```
+
+This controls initialization only. Dataset shuffling and other random training operations need their own reproducible random sources.
