@@ -19,9 +19,10 @@ export class Neuron {
    * Creates a neuron with randomly initialized weights.
    * @param inputSize Number of expected input features.
    * @param activation Activation function applied to the output.
+   * @param random Random source returning numbers in [0, 1).
    */
-  constructor(inputSize: number, activation: Activation = 'tanh') {
-    this.weights = Array.from({ length: inputSize }, () => val(randomWeight()));
+  constructor(inputSize: number, activation: Activation = 'tanh', random: () => number = Math.random) {
+    this.weights = Array.from({ length: inputSize }, () => val(random() * 2 - 1));
     this.bias = val(0);
     this.activation = activation;
   }
@@ -59,6 +60,3 @@ export class Neuron {
   }
 }
 
-function randomWeight(): number {
-  return Math.random() * 2 - 1;
-}
