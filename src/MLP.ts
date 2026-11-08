@@ -10,8 +10,8 @@ export class MLP {
 
   /**
    * Creates a multi-layer perceptron.
-   * @param inputSize Number of input features.
-   * @param layerSizes Output size of each layer.
+   * @param inputSize Positive integer number of input features.
+   * @param layerSizes Positive integer output size of each layer.
    * @param options Network activation configuration.
    */
   constructor(
