@@ -59,4 +59,3 @@ export class Neuron {
     return [...this.weights, this.bias];
   }
 }
-
