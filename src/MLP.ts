@@ -20,6 +20,7 @@ export class MLP {
     options?: {
       hiddenActivation?: Activation;
       outputActivation?: Activation;
+      random?: () => number;
     },
   ) {
     if (layerSizes.length === 0) {
@@ -41,6 +42,7 @@ export class MLP {
           sizes[i]!,
           sizes[i + 1]!,
           isOutputLayer ? outputActivation : hiddenActivation,
+          options?.random,
         ),
       );
     }

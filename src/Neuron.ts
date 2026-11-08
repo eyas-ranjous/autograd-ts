@@ -19,13 +19,14 @@ export class Neuron {
    * Creates a neuron with randomly initialized weights.
    * @param inputSize Positive integer number of expected input features.
    * @param activation Activation function applied to the output.
+   * @param random Random source returning numbers in [0, 1).
    */
-  constructor(inputSize: number, activation: Activation = 'tanh') {
+  constructor(inputSize: number, activation: Activation = 'tanh', random: () => number = Math.random) {
     if (!Number.isInteger(inputSize) || inputSize <= 0) {
       throw new Error('inputSize must be a positive integer');
     }
 
-    this.weights = Array.from({ length: inputSize }, () => val(randomWeight()));
+    this.weights = Array.from({ length: inputSize }, () => val(random() * 2 - 1));
     this.bias = val(0);
     this.activation = activation;
   }
@@ -61,8 +62,4 @@ export class Neuron {
   public parameters(): Value[] {
     return [...this.weights, this.bias];
   }
-}
-
-function randomWeight(): number {
-  return Math.random() * 2 - 1;
 }
