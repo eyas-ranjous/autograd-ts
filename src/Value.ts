@@ -163,19 +163,26 @@ export class Value {
     const topo: Value[] = [];
     const visited = new Set<Value>();
 
-    const buildTopo = (v: Value): void => {
-      if (visited.has(v)) return;
+    const stack: { node: Value; nextParent: number }[] = [
+      { node: this, nextParent: 0 },
+    ];
+    visited.add(this);
 
-      visited.add(v);
+    while (stack.length > 0) {
+      const frame = stack[stack.length - 1]!;
+      const parent = frame.node._prev[frame.nextParent];
 
-      for (const parent of v._prev) {
-        buildTopo(parent);
+      if (parent) {
+        frame.nextParent++;
+        if (!visited.has(parent)) {
+          visited.add(parent);
+          stack.push({ node: parent, nextParent: 0 });
+        }
+      } else {
+        topo.push(frame.node);
+        stack.pop();
       }
-
-      topo.push(v);
-    };
-
-    buildTopo(this);
+    }
 
     this.grad = 1;
 
