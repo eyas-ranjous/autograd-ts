@@ -157,7 +157,9 @@ export class Value {
   }
 
   /**
-   * Performs reverse-mode automatic differentiation to compute gradients.
+   * Performs reverse-mode automatic differentiation with an output gradient of one.
+   * Leaf gradients accumulate across calls until cleared with zeroGrad().
+   * Non-leaf gradients are recomputed for each call.
    */
   public backward(): void {
     const topo: Value[] = [];
@@ -177,7 +179,11 @@ export class Value {
 
     buildTopo(this);
 
-    this.grad = 1;
+    for (const node of topo) {
+      if (node._prev.length > 0) node.grad = 0;
+    }
+
+    this.grad += 1;
 
     for (let i = topo.length - 1; i >= 0; i--) {
       topo[i]!._backward();

@@ -229,7 +229,7 @@ const z = x.mul(y).add(x);
 
 Notice that gradients use `+=` rather than `=`. Because `x` feeds into two operations, its gradient arrives from two separate paths and must be summed. Overwriting it would discard one of those contributions.
 
-Calling `z.backward()` topologically sorts the computation graph and sets `z.grad = 1`, which seeds the process: the derivative of the output with respect to itself is always 1. The topological order guarantees that by the time a node propagates gradients to its inputs, all nodes downstream of it have already done so. The traversal then runs in reverse, each node firing its `_backward` to accumulate gradients up the chain.
+Calling `z.backward()` topologically sorts the computation graph and seeds differentiation with a gradient of 1: the derivative of the output with respect to itself is always 1. The topological order guarantees that by the time a node propagates gradients to its inputs, all nodes downstream of it have already done so. The traversal then runs in reverse, each node firing its `_backward` to accumulate gradients up the chain.
 
 For `z = x * y + x` with `x = 2, y = 3`:
 
@@ -294,7 +294,9 @@ for (let epoch = 0; epoch < epochs; epoch++) {
 }
 ```
 
-> **Important:** `zeroGrad()` must be called before each `backward()`. Gradients accumulate with `+=`, so skipping this causes gradients from previous steps to corrupt the current update.
+Leaf gradients (including model parameters) accumulate across `backward()` calls. Call `model.zeroGrad()` before computing the next optimizer update, or deliberately accumulate gradients across multiple losses before updating. For an individual leaf, use `value.zeroGrad()`.
+
+Intermediate gradients are recomputed on every backward call, including when reusing the same graph or sharing intermediate nodes between losses. Calling `backward()` directly on a leaf adds 1 to its gradient. `zeroGrad()` only clears the node on which it is called; it does not traverse the graph.
 
 Over many epochs, the network adjusts its weights to reduce prediction error. This feedback loop is the mechanism that allows neural networks to learn.
 
