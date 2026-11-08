@@ -57,12 +57,15 @@ export class Value {
   public mul(v: Value | number): Value {
     const o = v instanceof Value ? v : val(v);
 
-    const out = new Value(this.data * o.data, {
+    const left = this.data;
+    const right = o.data;
+
+    const out = new Value(left * right, {
       prev: [this, o],
       op: '*',
       backward: () => {
-        this.grad += o.data * out.grad;
-        o.grad += this.data * out.grad;
+        this.grad += right * out.grad;
+        o.grad += left * out.grad;
       },
     });
 
@@ -75,13 +78,15 @@ export class Value {
    * @returns New Value representing x^n.
    */
   public pow(n: number): Value {
-    const out = new Value(this.data ** n, {
+    const base = this.data;
+
+    const out = new Value(base ** n, {
       prev: [this],
       op: `pow(${n})`,
       backward: () => {
         if (n === 0) return;
 
-        this.grad += n * this.data ** (n - 1) * out.grad;
+        this.grad += n * base ** (n - 1) * out.grad;
       },
     });
 
@@ -111,11 +116,13 @@ export class Value {
    * @returns New Value representing max(0, x).
    */
   public relu(): Value {
-    const out = new Value(this.data > 0 ? this.data : 0, {
+    const positive = this.data > 0;
+
+    const out = new Value(positive ? this.data : 0, {
       prev: [this],
       op: 'relu',
       backward: () => {
-        this.grad += (this.data > 0 ? 1 : 0) * out.grad;
+        this.grad += (positive ? 1 : 0) * out.grad;
       },
     });
 
