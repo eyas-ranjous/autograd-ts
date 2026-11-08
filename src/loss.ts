@@ -5,12 +5,17 @@ import { Value, val } from './Value';
  * @param predictions Model predictions.
  * @param targets Expected values.
  * @returns Scalar loss value.
+ * @throws If inputs are empty or their lengths differ.
  */
 export function mse(predictions: Value[], targets: number[]): Value {
   if (predictions.length !== targets.length) {
     throw new Error(
       `Expected ${predictions.length} targets, received ${targets.length}`,
     );
+  }
+
+  if (predictions.length === 0) {
+    throw new Error('MSE requires at least one prediction and target');
   }
 
   let loss = val(0);
