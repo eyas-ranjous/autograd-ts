@@ -9,12 +9,16 @@ export class Layer {
 
   /**
    * Creates a layer of neurons.
-   * @param inputSize Number of inputs per neuron.
-   * @param outputSize Number of neurons in the layer.
+   * @param inputSize Positive integer number of inputs per neuron.
+   * @param outputSize Positive integer number of neurons in the layer.
    * @param activation Activation function used by each neuron.
    * @param random Random source shared across the layer.
    */
   constructor(inputSize: number, outputSize: number, activation: Activation = "tanh", random: () => number = Math.random) {
+    if (!Number.isInteger(outputSize) || outputSize <= 0) {
+      throw new Error('outputSize must be a positive integer');
+    }
+
     this.neurons = Array.from(
       { length: outputSize },
       () => new Neuron(inputSize, activation, random),
