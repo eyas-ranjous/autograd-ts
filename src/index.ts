@@ -4,3 +4,4 @@ export { mse } from './loss';
 export { sgd } from './optim';
 export type { Activation } from './Neuron';
 
+export type { MLPSnapshot } from './serialization';
