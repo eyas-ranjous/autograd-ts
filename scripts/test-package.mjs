@@ -20,6 +20,9 @@ assert.equal(x.grad, 4);
 assert.equal(typeof MLP, 'function');
 assert.equal(typeof mse, 'function');
 assert.equal(typeof sgd, 'function');
+const model = new MLP(2, [1]);
+const restored = MLP.fromJSON(JSON.parse(JSON.stringify(model)));
+assert.deepEqual(restored.forward([1, 2]).map(value => value.data), model.forward([1, 2]).map(value => value.data));
 `;
   writeFileSync(join(directory, 'consumer.mjs'), "import assert from 'node:assert/strict';\nimport { val, MLP, mse, sgd } from 'autograd-ts';\n" + assertions);
   writeFileSync(join(directory, 'consumer.cjs'), "const assert = require('node:assert/strict');\nconst { val, MLP, mse, sgd } = require('autograd-ts');\n" + assertions);
@@ -27,7 +30,7 @@ assert.equal(typeof sgd, 'function');
     execFileSync(process.execPath, [file], { cwd: directory, stdio: 'inherit' });
   }
 
-  const typed = "import { val, Value, MLP, mse, sgd, type Activation } from 'autograd-ts';\nconst activation: Activation = 'tanh';\nconst model = new MLP(2, [1], { hiddenActivation: activation });\nconst value: Value = val(2);\nconst loss: Value = mse(model.forward([value.data, 1]), [0]);\nloss.backward();\nsgd(model.parameters(), 0.01);\n";
+  const typed = "import { val, Value, MLP, mse, sgd, type Activation, type MLPSnapshot } from 'autograd-ts';\nconst activation: Activation = 'tanh';\nconst model = new MLP(2, [1], { hiddenActivation: activation });\nconst value: Value = val(2);\nconst loss: Value = mse(model.forward([value.data, 1]), [0]);\nloss.backward();\nsgd(model.parameters(), 0.01);\nconst snapshot: MLPSnapshot = model.toJSON();\nconst restored: MLP = MLP.fromJSON(snapshot);\n";
   for (const file of ['consumer.mts', 'consumer.cts']) writeFileSync(join(directory, file), typed);
   execFileSync(process.execPath, [resolve('node_modules/typescript/bin/tsc'), '--strict', '--noEmit', '--target', 'ES2020', '--module', 'NodeNext', '--moduleResolution', 'NodeNext', 'consumer.mts', 'consumer.cts'], { cwd: directory, stdio: 'inherit' });
   console.log('Packed package passes ESM, CommonJS, and TypeScript consumer checks.');

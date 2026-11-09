@@ -64,6 +64,33 @@ model.parameters()        // returns all trainable Value nodes
 model.zeroGrad()          // resets all parameter gradients to zero
 ```
 
+## Saving and loading models
+
+`model.toJSON()` returns an independent `MLPSnapshot` containing the format
+version, architecture, activations, and named weights and biases.
+`MLP.fromJSON(snapshot)` validates parsed data and restores a model with the
+same predictions and zero gradients. `JSON.stringify(model)` also calls `toJSON()`.
+
+Your application chooses where to store the JSON. For example, in Node.js:
+
+```ts
+import { readFile, writeFile } from 'node:fs/promises';
+import { MLP } from 'autograd-ts';
+
+await writeFile('model.json', JSON.stringify(model.toJSON()));
+
+const saved: unknown = JSON.parse(await readFile('model.json', 'utf8'));
+const restored = MLP.fromJSON(saved);
+const prediction = restored.forward([0, 1]);
+```
+
+Version 1 names parameters as `layers.0.neurons.0.weights.0` and
+`layers.0.neurons.0.bias`, using zero-based indices. Loading rejects unsupported
+versions, invalid dimensions or activations, missing or extra parameters, and
+non-finite values. Saving also rejects non-finite parameters, which JSON cannot
+represent. The snapshot excludes gradients, computation graphs, random-generator
+state, and training progress. It is model state, not a full training checkpoint.
+
 ## `mse(predictions, targets)`
 
 Computes mean squared error. Returns a `Value` that is part of the computation graph and supports `backward()`.

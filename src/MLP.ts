@@ -1,12 +1,14 @@
 import { Value, val } from './Value';
 import { Activation } from './Neuron';
 import { Layer } from './Layer';
+import { MLPSnapshot, parameterNames, validateSnapshot } from './serialization';
 
 /**
  * Multi-layer perceptron composed of one or more fully connected layers.
  */
 export class MLP {
   private layers: Layer[];
+  private architecture: Omit<MLPSnapshot, 'version' | 'parameters'>;
 
   /**
    * Creates a multi-layer perceptron.
@@ -30,6 +32,12 @@ export class MLP {
     const hiddenActivation = options?.hiddenActivation ?? 'tanh';
     const outputActivation = options?.outputActivation ?? 'none';
 
+    this.architecture = {
+      inputSize,
+      layerSizes: [...layerSizes],
+      hiddenActivation,
+      outputActivation,
+    };
     const sizes = [inputSize, ...layerSizes];
 
     this.layers = [];
@@ -46,6 +54,49 @@ export class MLP {
         ),
       );
     }
+  }
+
+  /**
+   * Copies architecture and finite parameter values into a versioned JSON snapshot.
+   * @returns Model state without gradients or computation graphs.
+   */
+  public toJSON(): MLPSnapshot {
+    const parameters: Record<string, number> = {};
+    const values = this.parameters();
+    let index = 0;
+    for (const name of parameterNames(this.architecture.inputSize, this.architecture.layerSizes)) {
+      const value = values[index++]!.data;
+      if (!Number.isFinite(value)) {
+        throw new Error(`Cannot serialize non-finite MLP parameter: ${name}`);
+      }
+      parameters[name] = value;
+    }
+    return {
+      version: 1,
+      ...this.architecture,
+      layerSizes: [...this.architecture.layerSizes],
+      parameters,
+    };
+  }
+
+  /**
+   * Restores a model from a version 1 snapshot, validating before allocation.
+   * @param snapshot Parsed JSON model state.
+   * @returns Independent model with restored parameters and zero gradients.
+   */
+  public static fromJSON(snapshot: unknown): MLP {
+    validateSnapshot(snapshot);
+    const model = new MLP(snapshot.inputSize, snapshot.layerSizes, {
+      hiddenActivation: snapshot.hiddenActivation,
+      outputActivation: snapshot.outputActivation,
+      random: () => 0.5,
+    });
+    const parameters = model.parameters();
+    let index = 0;
+    for (const name of parameterNames(snapshot.inputSize, snapshot.layerSizes)) {
+      parameters[index++]!.data = snapshot.parameters[name]!;
+    }
+    return model;
   }
 
   /**
