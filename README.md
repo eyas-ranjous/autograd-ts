@@ -90,23 +90,26 @@ dz/dy: 2
 ```
 
 **XOR training**
-```
-epoch=0   loss=1.824531
-epoch=100 loss=0.712943
-epoch=200 loss=0.403817
-epoch=300 loss=0.182691
-epoch=400 loss=0.087432
-epoch=500 loss=0.041827
-epoch=600 loss=0.021554
-epoch=700 loss=0.012115
-epoch=800 loss=0.007083
-epoch=900 loss=0.004291
 
-[0, 0] => 0.0213
-[0, 1] => 0.9834
-[1, 0] => 0.9772
-[1, 1] => 0.0189
+From a repository checkout, install dependencies with `npm ci`, then run:
+
+```sh
+npm run example:xor
 ```
+
+The example uses seed 42 and trains for 1,000 epochs in a fixed sample order.
+Running it again reproduces the same predictions:
+
+```text
+XOR predictions (seed=42, epochs=1000)
+0,0 => 0.0000
+0,1 => 1.0000
+1,0 => 1.0000
+1,1 => 0.0000
+```
+
+The test suite runs this same training function, checks all four predictions
+within 0.1 of their targets, and verifies identical weights across runs.
 
 ---
 

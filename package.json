@@ -22,7 +22,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "prepublishOnly": "npm run test && npm run test:package",
-    "test:package": "npm run build && node scripts/test-package.mjs"
+    "test:package": "npm run build && node scripts/test-package.mjs",
+    "example:xor": "tsc -p tsconfig.examples.json && node .examples-dist/examples/xor.js"
   },
   "keywords": [
     "autograd",
